@@ -17,7 +17,7 @@ export function Reveal({ children, delay = 0, className = "" }: { children: Reac
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (prefersReducedMotion) {
-      setIsVisible(true);
+      window.requestAnimationFrame(() => setIsVisible(true));
       return;
     }
 
