@@ -67,7 +67,7 @@ export const demoCases: DemoCase[] = [
       urgency: "High - leadership needs a proposal-ready workflow this week",
       budgetRange: "$8k - $15k",
       solutionType: "Internal tool MVP",
-      extraNotes: "Future versions may include reporting dashboards and integration with workflow automation tools.",
+      extraNotes: "The workflow should support reporting dashboards and integration with automation tools.",
     },
   },
 ];

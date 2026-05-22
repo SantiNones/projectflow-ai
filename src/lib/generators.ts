@@ -116,11 +116,11 @@ function buildDeveloperBrief(request: ProjectRequest, analysis: ProjectAnalysis)
 
   if (type === "Website Sprint") {
     return {
-      suggestedStack: "Next.js, TypeScript, Tailwind CSS, responsive section components, static content configuration and basic SEO metadata.",
+      suggestedStack: "Next.js, TypeScript, Tailwind CSS, responsive section components, structured content configuration and basic SEO metadata.",
       mainFeatures: "Landing sections, service overview, lead/contact form, trust indicators, responsive navigation and conversion-focused CTAs.",
       reusableComponents: "Hero, section header, feature cards, FAQ blocks, contact form, CTA bands and testimonial or proof cards.",
       dataModelIdea: "WebsiteProject with pageSections, leadForm, services, seoMetadata and conversionEvents objects.",
-      suggestedApiEndpoints: "POST /api/contact later if lead capture moves beyond static export.",
+      suggestedApiEndpoints: "POST /api/contact for lead capture and structured inquiry routing.",
       integrationOptions: "Email routing, CRM webhook, Make, n8n, Zapier or Power Automate lead handoff.",
       technicalRisks: "Content readiness, mobile polish, form spam protection and SEO expectations.",
     };
@@ -128,11 +128,11 @@ function buildDeveloperBrief(request: ProjectRequest, analysis: ProjectAnalysis)
 
   if (type === "Dashboard / Internal Tool") {
     return {
-      suggestedStack: "Next.js, TypeScript, Tailwind CSS, local state first, future API layer and structured table/filter components.",
+      suggestedStack: "Next.js, TypeScript, Tailwind CSS, local state, export utilities and structured table/filter components.",
       mainFeatures: "Data intake, dashboard cards, tables, filters, status tracking, export controls and saved project state.",
-      reusableComponents: "Metric cards, table rows, filter bars, status badges, detail panels and export preview blocks.",
+      reusableComponents: "Metric cards, table rows, filter bars, status badges, detail panels and export blocks.",
       dataModelIdea: "InternalToolProject with entities, metrics, filters, records, tasks, progress and exportPayload objects.",
-      suggestedApiEndpoints: "GET /api/records, POST /api/records, POST /api/export later when persistence is added.",
+      suggestedApiEndpoints: "GET /api/records, POST /api/records and POST /api/export for a server-backed version.",
       integrationOptions: "CSV import/export, Google Sheets, Airtable, Make, n8n, Zapier and Power Automate.",
       technicalRisks: "Data shape changes, permissions, dashboard performance and source-of-truth alignment.",
     };
@@ -140,24 +140,24 @@ function buildDeveloperBrief(request: ProjectRequest, analysis: ProjectAnalysis)
 
   if (type === "AI Assistant Prototype") {
     return {
-      suggestedStack: "Next.js, TypeScript, Tailwind CSS, prompt templates, local mock responses now and future OpenAI API integration with human review.",
+      suggestedStack: "Next.js, TypeScript, Tailwind CSS, prompt templates, review states and AI-ready response structures.",
       mainFeatures: "Structured intake, prompt-ready payloads, generated recommendations, review states, export controls and audit-friendly outputs.",
-      reusableComponents: "Prompt panels, result cards, confidence indicators, review checklist, task cards and export preview blocks.",
+      reusableComponents: "Prompt panels, result cards, confidence indicators, review checklist, task cards and export blocks.",
       dataModelIdea: "AssistantProject with request, promptTemplate, generatedDraft, reviewNotes, tasks and automationPayload objects.",
-      suggestedApiEndpoints: "POST /api/generate-assistant-response and POST /api/review later when external AI is introduced.",
-      integrationOptions: "Future OpenAI API, Make, n8n, Zapier, Power Automate and internal review queues.",
+      suggestedApiEndpoints: "POST /api/generate-assistant-response and POST /api/review for a server-backed version.",
+      integrationOptions: "OpenAI API-ready handoff, Make, n8n, Zapier, Power Automate and internal review queues.",
       technicalRisks: "Prompt consistency, hallucination controls, sensitive data handling and review workflow clarity.",
     };
   }
 
   return {
-    suggestedStack: "Next.js, TypeScript, Tailwind CSS, structured forms, local storage, JSON/CSV export utilities and future webhook handlers.",
+    suggestedStack: "Next.js, TypeScript, Tailwind CSS, structured forms, local storage, JSON/CSV export utilities and webhook-ready payloads.",
     mainFeatures: "Project intake, demo loading, generated analysis, PM brief, developer brief, task tracking, progress updates and automation-ready exports.",
-    reusableComponents: "Intake fields, demo cards, dashboard cards, brief cards, task status controls, progress bar and export preview blocks.",
+    reusableComponents: "Intake fields, demo cards, dashboard cards, brief cards, task status controls, progress bar and export blocks.",
     dataModelIdea: "GeneratedProject with request, analysis, pmBrief, developerBrief, tasks, progress and automationPayload objects.",
-    suggestedApiEndpoints: "POST /api/generate-brief, POST /api/load-demo and POST /api/export-webhook later when server-side features are needed.",
+    suggestedApiEndpoints: "POST /api/generate-brief, POST /api/load-demo and POST /api/export-webhook for a server-backed version.",
     integrationOptions: "Make webhook, n8n workflow trigger, Zapier catch hook and Power Automate HTTP request.",
-    technicalRisks: "Export schema versioning, webhook error handling, inconsistent user inputs and future persistence strategy.",
+    technicalRisks: "Export schema versioning, webhook error handling, inconsistent user inputs and persistence strategy.",
   };
 }
 
@@ -169,7 +169,7 @@ function taskTitle(phase: string, analysis: ProjectAnalysis, request: ProjectReq
     Development: ["Build reusable MVP components", "Connect generated project state"],
     Automation: ["Prepare export payload schema", "Define CSV and webhook-ready handoff"],
     Testing: ["Test demo cases and form validation", "Review task status and progress updates"],
-    Deployment: ["Run production build", "Prepare Vercel preview handoff"],
+    Deployment: ["Run production build", "Prepare Vercel deployment handoff"],
     Handover: ["Document assumptions and risks", `Share next-step recommendations for ${request.clientName || "the client"}`],
   };
 
