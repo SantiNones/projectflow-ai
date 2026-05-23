@@ -1,6 +1,7 @@
 import type { DeveloperBrief, GeneratedProject, PMBrief, ProjectAnalysis, ProjectComplexity, ProjectPriority, ProjectProgress, ProjectRequest, ProjectRequestInput, Task } from "@/types/project";
 
 const phases = ["Discovery", "UX/UI", "Development", "Automation", "Testing", "Deployment", "Handover"] as const;
+type OutputLanguage = "en" | "es";
 
 function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -20,16 +21,16 @@ function inferProjectType(text: string) {
     return "AI Assistant Prototype";
   }
 
-  if (includesAny(text, ["reports", "data", "tracking", "dashboard", "metrics", "kpi", "analytics"])) {
-    return "Dashboard / Internal Tool";
+  if (includesAny(text, ["whatsapp", "instagram", "dm", "dms", "booking", "appointments", "reservations", "leads", "lead", "client requests", "intake", "messages", "manual replies", "slow replies"])) {
+    return "Automation / Lead Intake";
   }
 
   if (includesAny(text, ["website", "landing page", "brand", "outdated site", "online presence", "seo"])) {
     return "Website Sprint";
   }
 
-  if (includesAny(text, ["whatsapp", "booking", "appointments", "leads", "instagram", "messages", "manual replies", "slow replies"])) {
-    return "Automation / Lead Intake";
+  if (includesAny(text, ["reports", "data", "tracking", "dashboard", "metrics", "kpi", "analytics"])) {
+    return "Dashboard / Internal Tool";
   }
 
   if (includesAny(text, ["repetitive tasks", "admin work", "manual process", "manual", "spreadsheet", "triage"])) {
@@ -79,7 +80,42 @@ function servicePackage(projectType: string) {
   return "Automation Sprint";
 }
 
-function buildAnalysis(request: ProjectRequest): ProjectAnalysis {
+function localizedProjectType(projectType: string, language: OutputLanguage) {
+  if (language === "en") return projectType;
+  if (projectType === "Automation / Lead Intake") return "Automatización / Intake de leads";
+  if (projectType === "Website Sprint") return "Sprint de sitio web";
+  if (projectType === "Dashboard / Internal Tool") return "Dashboard / Herramienta interna";
+  if (projectType === "AI Assistant Prototype") return "Prototipo de asistente con IA";
+  return "MVP de herramienta interna";
+}
+
+function localizedComplexity(complexity: ProjectComplexity, language: OutputLanguage) {
+  if (language === "en") return complexity;
+  return complexity === "High" ? "Alta" : complexity === "Low" ? "Baja" : "Media";
+}
+
+function localizedPriority(priority: ProjectPriority, language: OutputLanguage) {
+  if (language === "en") return priority;
+  return priority === "High" ? "Alta" : priority === "Low" ? "Baja" : "Media";
+}
+
+function buildRecommendedSolution(projectType: string, packageName: string, language: OutputLanguage) {
+  if (language === "es") {
+    if (projectType === "Automation / Lead Intake") return "Construir un sistema de intake que capture solicitudes, califique leads y prepare un handoff operativo claro. Centralizar el flujo reduce respuestas manuales y acelera reservas o seguimiento.";
+    if (projectType === "Website Sprint") return "Construir un sitio web claro, responsive y orientado a conversión con secciones de servicio, llamadas a la acción y captura de consultas.";
+    if (projectType === "Dashboard / Internal Tool") return "Construir una herramienta interna con intake estructurado, seguimiento de estado, métricas clave y exportaciones para decisiones operativas.";
+    if (projectType === "AI Assistant Prototype") return "Construir un prototipo de asistente que estructure entradas, genere recomendaciones revisables y prepare una integración de IA con control humano.";
+    return `Construir un ${packageName.toLowerCase()} con intake estructurado, tareas accionables y exportación lista para handoff.`;
+  }
+
+  if (projectType === "Automation / Lead Intake") return "Build a lead intake system that captures requests, qualifies leads and prepares a clear operational handoff. Centralizing the flow reduces manual replies and accelerates booking or follow-up.";
+  if (projectType === "Website Sprint") return "Build a clear, responsive, conversion-focused website with service sections, calls to action and inquiry capture.";
+  if (projectType === "Dashboard / Internal Tool") return "Build an internal tool with structured intake, status tracking, key metrics and exports for operational decisions.";
+  if (projectType === "AI Assistant Prototype") return "Build an assistant prototype that structures inputs, generates reviewable recommendations and prepares an AI integration with human oversight.";
+  return `Build a ${packageName.toLowerCase()} with structured intake, actionable tasks and handoff-ready export.`;
+}
+
+function buildAnalysis(request: ProjectRequest, language: OutputLanguage): ProjectAnalysis {
   const text = requestText(request);
   const projectType = inferProjectType(text);
   const complexity = inferComplexity(projectType, text);
@@ -87,21 +123,35 @@ function buildAnalysis(request: ProjectRequest): ProjectAnalysis {
   const packageName = servicePackage(projectType);
 
   return {
-    projectType,
-    complexity,
-    priority,
-    recommendedSolution: `Create a ${packageName.toLowerCase()} for ${request.clientName || "the client"} that addresses ${request.mainProblem.toLowerCase()} and moves the team toward ${request.desiredOutcome.toLowerCase()}.`,
-    keyRisks: complexity === "High" ? "Integration scope, data quality, unclear ownership and workflow edge cases may expand the MVP." : "Incomplete requirements, unclear handoff ownership and missing success criteria could slow delivery.",
-    missingInformation: "Decision-maker approval path, must-have integrations, reporting expectations, launch timeline and success metrics.",
-    recommendedNextStep: `Run a focused discovery session to validate the ${projectType.toLowerCase()} scope, prioritize MVP features and confirm export or handoff requirements.`,
-    suggestedServicePackage: packageName,
+    projectType: localizedProjectType(projectType, language),
+    complexity: localizedComplexity(complexity, language) as ProjectComplexity,
+    priority: localizedPriority(priority, language) as ProjectPriority,
+    recommendedSolution: buildRecommendedSolution(projectType, packageName, language),
+    keyRisks: language === "es" ? "Alcance poco definido, ownership de handoff, requisitos incompletos y expectativas de integración pueden afectar la entrega." : "Unclear scope, handoff ownership, incomplete requirements and integration expectations can affect delivery.",
+    missingInformation: language === "es" ? "Responsable de aprobación, integraciones obligatorias, métricas de éxito, timeline de lanzamiento y formato de handoff." : "Approval owner, required integrations, success metrics, launch timeline and handoff format.",
+    recommendedNextStep: language === "es" ? "Realizar una sesión de discovery enfocada para validar alcance, priorizar el MVP y confirmar requisitos de handoff." : "Run a focused discovery session to validate scope, prioritize the MVP and confirm handoff requirements.",
+    suggestedServicePackage: language === "es" ? localizedProjectType(projectType, language) : packageName,
   };
 }
 
-function buildPMBrief(request: ProjectRequest, analysis: ProjectAnalysis): PMBrief {
+function buildPMBrief(request: ProjectRequest, analysis: ProjectAnalysis, language: OutputLanguage): PMBrief {
+  const client = request.clientName || (language === "es" ? "el cliente" : "the client");
+  if (language === "es") {
+    return {
+      executiveSummary: `${request.projectName} organiza la solicitud de ${client} en un alcance claro, un plan de entrega y tareas accionables.`,
+      clientGoal: "Reducir ambigüedad, acelerar el handoff y convertir la solicitud inicial en un plan ejecutable.",
+      mvpScope: "Intake estructurado, análisis del proyecto, briefs para PM y desarrollo, tareas por fase, seguimiento de progreso y exportación JSON/CSV.",
+      outOfScope: "Autenticación, pagos, base de datos, IA externa y ejecución real de webhooks.",
+      deliveryPhases: "Discovery, UX/UI, desarrollo, automatización, testing, deployment y handover.",
+      risks: analysis.keyRisks,
+      clientQuestions: "¿Quién aprueba el alcance? ¿Qué herramientas reciben el handoff? ¿Qué métrica define éxito?",
+      suggestedNextAction: analysis.recommendedNextStep,
+    };
+  }
+
   return {
-    executiveSummary: `${request.projectName} is a ${analysis.projectType.toLowerCase()} initiative for ${request.clientName || "the client"} designed to solve ${request.mainProblem.toLowerCase()} with a clear MVP and delivery plan.`,
-    clientGoal: request.desiredOutcome,
+    executiveSummary: `${request.projectName} turns ${client}'s request into a clear scope, delivery plan and actionable task list.`,
+    clientGoal: "Reduce ambiguity, accelerate handoff and convert the initial request into an executable plan.",
     mvpScope: `Capture the current request flow, design a polished intake experience, generate structured outputs and prepare handoff-ready exports for ${request.solutionType || analysis.suggestedServicePackage}.`,
     outOfScope: "Authentication, payments, database persistence, live AI generation and real third-party workflow execution are intentionally excluded from this MVP.",
     deliveryPhases: "Discovery, UX/UI, development, automation preparation, testing, deployment and stakeholder handover.",
@@ -111,10 +161,20 @@ function buildPMBrief(request: ProjectRequest, analysis: ProjectAnalysis): PMBri
   };
 }
 
-function buildDeveloperBrief(request: ProjectRequest, analysis: ProjectAnalysis): DeveloperBrief {
-  const type = analysis.projectType;
+function buildDeveloperBrief(analysis: ProjectAnalysis, language: OutputLanguage): DeveloperBrief {
+  const type = language === "es" ? analysis.projectType : analysis.projectType;
+  const isSpanish = language === "es";
 
-  if (type === "Website Sprint") {
+  if (type.includes("Website") || type.includes("sitio web")) {
+    if (isSpanish) return {
+      suggestedStack: "Next.js, TypeScript, Tailwind CSS, secciones responsive, configuración de contenido y SEO básico.",
+      mainFeatures: "Secciones de servicio, formulario de contacto, CTAs, navegación responsive y elementos de confianza.",
+      reusableComponents: "Hero, encabezados de sección, cards, formulario, bloques CTA y secciones de prueba social.",
+      dataModelIdea: "WebsiteProject con pageSections, leadForm, services, seoMetadata y conversionEvents.",
+      suggestedApiEndpoints: "POST /api/contact para captura de consultas.",
+      integrationOptions: "Email routing, CRM webhook, Make, n8n, Zapier o Power Automate.",
+      technicalRisks: "Contenido incompleto, pulido mobile, protección antispam y expectativas SEO.",
+    };
     return {
       suggestedStack: "Next.js, TypeScript, Tailwind CSS, responsive section components, structured content configuration and basic SEO metadata.",
       mainFeatures: "Landing sections, service overview, lead/contact form, trust indicators, responsive navigation and conversion-focused CTAs.",
@@ -126,7 +186,16 @@ function buildDeveloperBrief(request: ProjectRequest, analysis: ProjectAnalysis)
     };
   }
 
-  if (type === "Dashboard / Internal Tool") {
+  if (type.includes("Dashboard") || type.includes("Herramienta interna")) {
+    if (isSpanish) return {
+      suggestedStack: "Next.js, TypeScript, Tailwind CSS, estado local, utilidades de exportación y componentes de tablas/filtros.",
+      mainFeatures: "Intake de datos, cards de métricas, tablas, filtros, seguimiento de estado y exportaciones.",
+      reusableComponents: "Metric cards, filas de tabla, filtros, badges de estado, paneles de detalle y bloques de exportación.",
+      dataModelIdea: "InternalToolProject con entities, metrics, filters, records, tasks, progress y exportPayload.",
+      suggestedApiEndpoints: "GET /api/records, POST /api/records y POST /api/export para una versión server-backed.",
+      integrationOptions: "CSV, Google Sheets, Airtable, Make, n8n, Zapier y Power Automate.",
+      technicalRisks: "Cambios en datos, permisos, performance y alineación con la fuente de verdad.",
+    };
     return {
       suggestedStack: "Next.js, TypeScript, Tailwind CSS, local state, export utilities and structured table/filter components.",
       mainFeatures: "Data intake, dashboard cards, tables, filters, status tracking, export controls and saved project state.",
@@ -138,7 +207,16 @@ function buildDeveloperBrief(request: ProjectRequest, analysis: ProjectAnalysis)
     };
   }
 
-  if (type === "AI Assistant Prototype") {
+  if (type.includes("AI") || type.includes("IA")) {
+    if (isSpanish) return {
+      suggestedStack: "Next.js, TypeScript, Tailwind CSS, plantillas de prompt, estados de revisión y estructuras listas para IA.",
+      mainFeatures: "Intake estructurado, payloads para prompts, recomendaciones revisables, controles de exportación y auditoría.",
+      reusableComponents: "Paneles de prompt, cards de resultado, indicadores, checklist de revisión, tareas y exportación.",
+      dataModelIdea: "AssistantProject con request, promptTemplate, generatedDraft, reviewNotes, tasks y automationPayload.",
+      suggestedApiEndpoints: "POST /api/generate-assistant-response y POST /api/review para una versión server-backed.",
+      integrationOptions: "Handoff listo para OpenAI API, Make, n8n, Zapier, Power Automate y revisión interna.",
+      technicalRisks: "Consistencia de prompts, control de alucinaciones, datos sensibles y claridad del flujo de revisión.",
+    };
     return {
       suggestedStack: "Next.js, TypeScript, Tailwind CSS, prompt templates, review states and AI-ready response structures.",
       mainFeatures: "Structured intake, prompt-ready payloads, generated recommendations, review states, export controls and audit-friendly outputs.",
@@ -161,7 +239,21 @@ function buildDeveloperBrief(request: ProjectRequest, analysis: ProjectAnalysis)
   };
 }
 
-function taskTitle(phase: string, analysis: ProjectAnalysis, request: ProjectRequest, index: number) {
+function taskTitle(phase: string, analysis: ProjectAnalysis, request: ProjectRequest, index: number, language: OutputLanguage) {
+  if (language === "es") {
+    const client = request.clientName || "el cliente";
+    const titleMap: Record<string, string[]> = {
+      Discovery: ["Validar objetivos y criterios de éxito", "Mapear responsables y ruta de aprobación"],
+      "UX/UI": ["Diseñar flujo de intake y resultados", "Refinar dashboard responsive del proyecto"],
+      Development: ["Construir componentes reutilizables", "Conectar estado generado del proyecto"],
+      Automation: ["Preparar schema de exportación", "Definir handoff JSON/CSV listo para workflow"],
+      Testing: ["Probar demos y validación del formulario", "Revisar estados de tareas y progreso"],
+      Deployment: ["Ejecutar build de producción", "Preparar handoff de deployment"],
+      Handover: ["Documentar supuestos y riesgos", `Compartir próximos pasos para ${client}`],
+    };
+    return titleMap[phase]?.[index] || `Preparar tarea de ${phase.toLowerCase()}`;
+  }
+
   const projectType = analysis.projectType.toLowerCase();
   const titleMap: Record<string, string[]> = {
     Discovery: [`Validate ${projectType} goals`, "Map stakeholder approval path"],
@@ -176,10 +268,10 @@ function taskTitle(phase: string, analysis: ProjectAnalysis, request: ProjectReq
   return titleMap[phase]?.[index] || `Prepare ${phase.toLowerCase()} task`;
 }
 
-function buildTasks(request: ProjectRequest, analysis: ProjectAnalysis): Task[] {
+function buildTasks(request: ProjectRequest, analysis: ProjectAnalysis, language: OutputLanguage): Task[] {
   return phases.flatMap((phase, phaseIndex) => [0, 1].map((taskIndex) => ({
     id: createId(`task-${phaseIndex}-${taskIndex}`),
-    title: taskTitle(phase, analysis, request, taskIndex),
+    title: taskTitle(phase, analysis, request, taskIndex, language),
     phase,
     priority: taskIndex === 0 || analysis.priority === "High" ? analysis.priority : "Medium",
     status: "To do" as const,
@@ -195,17 +287,17 @@ export function calculateProgress(tasks: Task[]): ProjectProgress {
   return { completedTasks, totalTasks, percentage };
 }
 
-export function generateProject(input: ProjectRequestInput): GeneratedProject {
+export function generateProject(input: ProjectRequestInput, language: OutputLanguage = "en"): GeneratedProject {
   const now = new Date().toISOString();
   const request: ProjectRequest = {
     id: createId("request"),
     ...input,
     createdAt: now,
   };
-  const analysis = buildAnalysis(request);
-  const pmBrief = buildPMBrief(request, analysis);
-  const developerBrief = buildDeveloperBrief(request, analysis);
-  const tasks = buildTasks(request, analysis);
+  const analysis = buildAnalysis(request, language);
+  const pmBrief = buildPMBrief(request, analysis, language);
+  const developerBrief = buildDeveloperBrief(analysis, language);
+  const tasks = buildTasks(request, analysis, language);
   const progress = calculateProgress(tasks);
   const id = createId("project");
 

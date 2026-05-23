@@ -101,7 +101,7 @@ export function ProjectFlowPrototype() {
     }
 
     setValidation("");
-    persistProject(generateProject(nextRequest));
+    persistProject(generateProject(nextRequest, language));
     scrollToOutput();
   }
 
