@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Reveal } from "@/components/Reveal";
 import { demoCases } from "@/lib/demoCases";
-import { downloadTextFile, projectToJson, tasksToCsv } from "@/lib/exportUtils";
+import { downloadTextFile, projectToAutomationPayload, projectToHandoffSummary, projectToJson, tasksToCsv } from "@/lib/exportUtils";
 import { generateProject, updateProjectTasks } from "@/lib/generators";
 import { type Language, translations } from "@/lib/i18n";
 import { clearProjectHistory, deleteProjectFromHistory, getProjectHistory, saveProjectToHistory } from "@/lib/storage";
@@ -81,6 +81,16 @@ export function ProjectFlowPrototype() {
   const t = translations[language];
   const jsonPreview = useMemo(() => (project ? projectToJson(project) : JSON.stringify({ request: emptyRequest, analysis: null, tasks: [] }, null, 2)), [project]);
 
+  const automationPayloadPreview = useMemo(
+  () => (project ? JSON.stringify(projectToAutomationPayload(project), null, 2) : JSON.stringify({ projectId: null, projectName: null, nextStep: null }, null, 2)),
+  [project]
+);
+
+const handoffSummaryPreview = useMemo(
+  () => (project ? projectToHandoffSummary(project, language) : language === "es" ? "Genera un proyecto para preparar un resumen de handoff." : "Generate a project to prepare a handoff summary."),
+  [project, language]
+);
+
   useEffect(() => {
     window.requestAnimationFrame(() => setHistory(getProjectHistory()));
   }, []);
@@ -122,9 +132,23 @@ export function ProjectFlowPrototype() {
     window.setTimeout(() => setCopyMessage(""), 1800);
   }
 
+  async function handleCopyAutomationPayload() {
+    if (!project) return;
+    await navigator.clipboard.writeText(JSON.stringify(projectToAutomationPayload(project), null, 2));
+    setCopyMessage(language === "es" ? "Payload de automatización copiado." : "Automation payload copied.");
+    window.setTimeout(() => setCopyMessage(""), 1800);
+  }
+
+  async function handleCopyHandoffSummary() {
+    if (!project) return;
+    await navigator.clipboard.writeText(projectToHandoffSummary(project, language));
+    setCopyMessage(language === "es" ? "Resumen de handoff copiado." : "Handoff summary copied.");
+    window.setTimeout(() => setCopyMessage(""), 1800);
+  }
+
   function handleDownloadJson() {
     if (!project) return;
-    downloadTextFile(`${project.request.projectName || "project"}.json`, projectToJson(project), "application/json");
+    downloadTextFile(`${project.request.projectName || "project"}-projectflow.json`, projectToJson(project), "application/json");
   }
 
   function handleDownloadCsv() {
@@ -215,6 +239,7 @@ export function ProjectFlowPrototype() {
                   <textarea
                     value={request[field]}
                     onChange={(event) => setRequest((current) => ({ ...current, [field]: event.target.value }))}
+                    onFocus={(event) => event.currentTarget.select()}
                     rows={wideFields.includes(field) ? 3 : 1}
                     className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
                     style={{ animationDelay: `${index * 30}ms` }}
@@ -307,11 +332,43 @@ export function ProjectFlowPrototype() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button type="button" disabled={!project} onClick={handleCopyJson} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45">{t.export.copyJson}</button>
+                  <button type="button" disabled={!project} onClick={handleCopyAutomationPayload} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45">
+                    {language === "es" ? "Copiar payload" : "Copy payload"}
+                  </button>
+
+                  <button type="button" disabled={!project} onClick={handleCopyHandoffSummary} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45">
+                    {language === "es" ? "Copiar handoff" : "Copy handoff"}
+                  </button>
                   <button type="button" disabled={!project} onClick={handleDownloadJson} className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45">{t.export.downloadJson}</button>
                   <button type="button" disabled={!project} onClick={handleDownloadCsv} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45">{t.export.downloadCsv}</button>
                 </div>
               </div>
-              <pre className="max-h-[520px] overflow-auto bg-slate-950 p-6 text-sm leading-7 text-slate-100"><code>{jsonPreview}</code></pre>
+              <div className="grid gap-0 xl:grid-cols-2">
+              <div>
+                <div className="border-b border-slate-800 bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  Full JSON
+                </div>
+                <pre className="max-h-[420px] overflow-auto bg-slate-950 p-6 text-sm leading-7 text-slate-100">
+                  <code>{jsonPreview}</code>
+                </pre>
+              </div>
+
+              <div className="border-t border-slate-800 xl:border-l xl:border-t-0">
+                <div className="border-b border-slate-800 bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  {language === "es" ? "Payload simple" : "Simple payload"}
+                </div>
+                <pre className="max-h-[210px] overflow-auto bg-slate-950 p-6 text-sm leading-7 text-slate-100">
+                  <code>{automationPayloadPreview}</code>
+                </pre>
+
+                <div className="border-y border-slate-800 bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  {language === "es" ? "Resumen de handoff" : "Handoff summary"}
+                </div>
+                <pre className="max-h-[210px] overflow-auto bg-slate-950 p-6 text-sm leading-7 text-slate-100">
+                  <code>{handoffSummaryPreview}</code>
+                </pre>
+              </div>
+            </div>
             </Card>
           </Reveal>
           <Reveal delay={120}>
