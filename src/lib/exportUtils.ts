@@ -28,3 +28,71 @@ export function downloadTextFile(filename: string, content: string, type: string
   link.remove();
   URL.revokeObjectURL(url);
 }
+
+export function projectToAutomationPayload(project: GeneratedProject) {
+  return {
+    projectId: project.id,
+    projectName: project.request.projectName,
+    clientName: project.request.clientName,
+    industry: project.request.industry,
+    projectType: project.analysis.projectType,
+    priority: project.analysis.priority,
+    complexity: project.analysis.complexity,
+    suggestedServicePackage: project.analysis.suggestedServicePackage,
+    recommendedSolution: project.analysis.recommendedSolution,
+    nextStep: project.analysis.recommendedNextStep,
+    mainProblem: project.request.mainProblem,
+    desiredOutcome: project.request.desiredOutcome,
+    currentTools: project.request.currentTools,
+    progressPercentage: project.progress.percentage,
+    completedTasks: project.progress.completedTasks,
+    totalTasks: project.progress.totalTasks,
+    createdAt: project.createdAt,
+  };
+}
+
+export function projectToHandoffSummary(project: GeneratedProject, language: "en" | "es" = "en") {
+  if (language === "es") {
+    return [
+      "Nuevo proyecto generado en ProjectFlow AI",
+      "",
+      `Cliente: ${project.request.clientName || "Sin cliente definido"}`,
+      `Proyecto: ${project.request.projectName}`,
+      `Industria: ${project.request.industry || "No especificada"}`,
+      `Tipo: ${project.analysis.projectType}`,
+      `Prioridad: ${project.analysis.priority}`,
+      `Complejidad: ${project.analysis.complexity}`,
+      `Paquete sugerido: ${project.analysis.suggestedServicePackage}`,
+      "",
+      "Solución recomendada:",
+      project.analysis.recommendedSolution,
+      "",
+      "Siguiente paso:",
+      project.analysis.recommendedNextStep,
+      "",
+      "Progreso:",
+      `${project.progress.completedTasks}/${project.progress.totalTasks} tareas completadas — ${project.progress.percentage}%`,
+    ].join("\n");
+  }
+
+  return [
+    "New ProjectFlow AI project",
+    "",
+    `Client: ${project.request.clientName || "No client defined"}`,
+    `Project: ${project.request.projectName}`,
+    `Industry: ${project.request.industry || "Not specified"}`,
+    `Type: ${project.analysis.projectType}`,
+    `Priority: ${project.analysis.priority}`,
+    `Complexity: ${project.analysis.complexity}`,
+    `Suggested package: ${project.analysis.suggestedServicePackage}`,
+    "",
+    "Recommended solution:",
+    project.analysis.recommendedSolution,
+    "",
+    "Next step:",
+    project.analysis.recommendedNextStep,
+    "",
+    "Progress:",
+    `${project.progress.completedTasks}/${project.progress.totalTasks} tasks completed — ${project.progress.percentage}%`,
+  ].join("\n");
+}
