@@ -6,6 +6,32 @@ ProjectFlow AI is a project intake and delivery planning tool that transforms va
 
 [ProjectFlow AI](https://projectflow-ai-chi.vercel.app/)
 
+## Screenshots
+
+### Hero
+
+![ProjectFlow AI Hero](./screenshots/hero.png)
+
+### Structured Intake
+
+![ProjectFlow AI Intake](./screenshots/intake.png)
+
+### Generated Analysis
+
+![ProjectFlow AI Results](./screenshots/results-dashboard.png)
+
+### PM and Developer Briefs
+
+![ProjectFlow AI Briefs](./screenshots/briefs.png)
+
+### Task Breakdown
+
+![ProjectFlow AI Tasks](./screenshots/task-breakdown.png)
+
+### Automation Export
+
+![ProjectFlow AI Export](./screenshots/export-handoff.png)
+
 ## Problem
 
 Project managers, consultants and technical teams often receive vague or incomplete project requests. Before execution can start, those requests need to be clarified, scoped, prioritized and translated into concrete tasks.
