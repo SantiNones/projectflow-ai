@@ -146,6 +146,13 @@ const handoffSummaryPreview = useMemo(
     window.setTimeout(() => setCopyMessage(""), 1800);
   }
 
+  async function handleCopyPlatformHandoff(platform: string) {
+    if (!project) return;
+    await navigator.clipboard.writeText(JSON.stringify(projectToAutomationPayload(project), null, 2));
+    setCopyMessage(language === "es" ? `Handoff para ${platform} copiado.` : `${platform} handoff copied.`);
+    window.setTimeout(() => setCopyMessage(""), 1800);
+  }
+
   function handleDownloadJson() {
     if (!project) return;
     downloadTextFile(`${project.request.projectName || "project"}-projectflow.json`, projectToJson(project), "application/json");
@@ -321,69 +328,97 @@ const handoffSummaryPreview = useMemo(
 
       <section id="export" className="mx-auto max-w-7xl px-5 pb-24 md:px-8">
         <SectionHeader eyebrow={t.export.eyebrow} title={t.export.title} />
-        <div className="grid gap-6 lg:grid-cols-[1fr_0.85fr]">
+        <div className="space-y-6">
           <Reveal>
             <Card className="overflow-hidden">
-              <div className="flex flex-col justify-between gap-4 border-b border-slate-200 bg-white p-5 md:flex-row md:items-center">
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-950">{t.export.jsonTitle}</h3>
-                  <p className="mt-1 text-sm text-slate-600">{project ? t.export.jsonDescription : t.mvp.noProjectDescription}</p>
-                  {copyMessage ? <p className="mt-2 text-sm font-semibold text-emerald-700">{copyMessage}</p> : null}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" disabled={!project} onClick={handleCopyJson} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45">{t.export.copyJson}</button>
-                  <button type="button" disabled={!project} onClick={handleCopyAutomationPayload} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45">
-                    {language === "es" ? "Copiar payload" : "Copy payload"}
-                  </button>
+              <div className="border-b border-slate-200 bg-white p-5 md:p-7">
+                <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="max-w-2xl">
+                    <h3 className="text-2xl font-semibold tracking-[-0.04em] text-slate-950">{t.export.jsonTitle}</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      {project ? t.export.jsonDescription : language === "es" ? "Genera un proyecto para previsualizar los outputs de exportación." : "Generate a project to preview export outputs."}
+                    </p>
+                    {copyMessage ? <p className="mt-3 text-sm font-semibold text-emerald-700">{copyMessage}</p> : null}
+                  </div>
 
-                  <button type="button" disabled={!project} onClick={handleCopyHandoffSummary} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45">
-                    {language === "es" ? "Copiar handoff" : "Copy handoff"}
-                  </button>
-                  <button type="button" disabled={!project} onClick={handleDownloadJson} className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45">{t.export.downloadJson}</button>
-                  <button type="button" disabled={!project} onClick={handleDownloadCsv} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45">{t.export.downloadCsv}</button>
+                  <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[420px]">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="px-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{language === "es" ? "Copiar" : "Copy"}</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button type="button" disabled={!project} onClick={handleCopyJson} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:border-blue-200 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-45">JSON</button>
+                        <button type="button" disabled={!project} onClick={handleCopyAutomationPayload} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:border-blue-200 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-45">Payload</button>
+                        <button type="button" disabled={!project} onClick={handleCopyHandoffSummary} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:border-blue-200 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-45">Handoff</button>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="px-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{language === "es" ? "Descargar" : "Download"}</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button type="button" disabled={!project} onClick={handleDownloadJson} className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45">JSON</button>
+                        <button type="button" disabled={!project} onClick={handleDownloadCsv} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:border-blue-200 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-45">CSV</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="grid gap-0 xl:grid-cols-2">
-              <div>
-                <div className="border-b border-slate-800 bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                  Full JSON
-                </div>
-                <pre className="max-h-[420px] overflow-auto bg-slate-950 p-6 text-sm leading-7 text-slate-100">
-                  <code>{jsonPreview}</code>
-                </pre>
-              </div>
 
-              <div className="border-t border-slate-800 xl:border-l xl:border-t-0">
-                <div className="border-b border-slate-800 bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                  {language === "es" ? "Payload simple" : "Simple payload"}
+              {project ? (
+                <div className="space-y-5 bg-slate-50 p-5 md:p-7">
+                  <ExportPreviewBlock title="Full JSON" content={jsonPreview} maxHeight="max-h-[360px]" />
+                  <ExportPreviewBlock title={language === "es" ? "Payload simple" : "Simple Payload"} content={automationPayloadPreview} maxHeight="max-h-[260px]" />
+                  <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
+                    <div className="border-b border-slate-200 px-5 py-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{language === "es" ? "Resumen de handoff" : "Handoff Summary"}</p>
+                    </div>
+                    <div className="max-h-[260px] overflow-auto whitespace-pre-wrap break-words p-5 text-sm leading-7 text-slate-700">{handoffSummaryPreview}</div>
+                  </div>
                 </div>
-                <pre className="max-h-[210px] overflow-auto bg-slate-950 p-6 text-sm leading-7 text-slate-100">
-                  <code>{automationPayloadPreview}</code>
-                </pre>
-
-                <div className="border-y border-slate-800 bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                  {language === "es" ? "Resumen de handoff" : "Handoff summary"}
+              ) : (
+                <div className="bg-slate-50 p-5 md:p-7">
+                  <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center">
+                    <p className="text-sm font-semibold text-slate-900">{language === "es" ? "Genera un proyecto para previsualizar los outputs de exportación." : "Generate a project to preview export outputs."}</p>
+                    <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">{language === "es" ? "Cuando exista un proyecto, aquí verás el JSON completo, el payload simple y el resumen de handoff." : "Once a project exists, this area will show the full JSON, simple payload and handoff summary."}</p>
+                  </div>
                 </div>
-                <pre className="max-h-[210px] overflow-auto bg-slate-950 p-6 text-sm leading-7 text-slate-100">
-                  <code>{handoffSummaryPreview}</code>
-                </pre>
-              </div>
-            </div>
+              )}
             </Card>
           </Reveal>
+
           <Reveal delay={120}>
             <Card className="p-6 md:p-8">
-              <Badge tone="green">{t.export.webhookBadge}</Badge>
-              <h3 className="mt-5 text-2xl font-semibold tracking-[-0.04em] text-slate-950">{t.export.webhookTitle}</h3>
-              <p className="mt-4 text-sm leading-7 text-slate-600">{t.export.webhookDescription}</p>
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                {["Make", "n8n", "Zapier", "Power Automate"].map((tool, index) => <Reveal key={tool} delay={index * 70}><div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-800">{tool}</div></Reveal>)}
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div className="max-w-2xl">
+                  <Badge tone="green">{t.export.webhookBadge}</Badge>
+                  <h3 className="mt-5 text-2xl font-semibold tracking-[-0.04em] text-slate-950">{t.export.webhookTitle}</h3>
+                  <p className="mt-4 text-sm leading-7 text-slate-600">{t.export.webhookDescription}</p>
+                </div>
+                <p className="text-sm font-medium text-slate-500">{language === "es" ? "Copia un handoff listo para workflow." : "Copy a workflow-ready handoff."}</p>
+              </div>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {["Make", "n8n", "Zapier", "Power Automate"].map((tool, index) => (
+                  <Reveal key={tool} delay={index * 70}>
+                    <button type="button" disabled={!project} onClick={() => handleCopyPlatformHandoff(tool)} className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left text-sm font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800 disabled:cursor-not-allowed disabled:opacity-45">
+                      {tool}
+                    </button>
+                  </Reveal>
+                ))}
               </div>
             </Card>
           </Reveal>
         </div>
       </section>
     </main>
+  );
+}
+
+function ExportPreviewBlock({ title, content, maxHeight }: { title: string; content: string; maxHeight: string }) {
+  return (
+    <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-950 shadow-sm">
+      <div className="border-b border-slate-800 bg-slate-900 px-5 py-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{title}</p>
+      </div>
+      <pre className={`${maxHeight} overflow-auto p-5 text-sm leading-7 text-slate-100`}><code>{content}</code></pre>
+    </div>
   );
 }
 
