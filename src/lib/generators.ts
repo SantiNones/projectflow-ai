@@ -161,9 +161,13 @@ function buildPMBrief(request: ProjectRequest, analysis: ProjectAnalysis, langua
   };
 }
 
-function buildDeveloperBrief(analysis: ProjectAnalysis, language: OutputLanguage): DeveloperBrief {
+function buildDeveloperBrief(request: ProjectRequest, analysis: ProjectAnalysis, language: OutputLanguage): DeveloperBrief {
   const type = language === "es" ? analysis.projectType : analysis.projectType;
   const isSpanish = language === "es";
+  const projectName = request.projectName || (isSpanish ? "el proyecto" : "the project");
+  const client = request.clientName || (isSpanish ? "el cliente" : "the client");
+  const tools = request.currentTools || (isSpanish ? "las herramientas actuales" : "the current tools");
+  const solution = request.solutionType || analysis.suggestedServicePackage;
 
   if (type.includes("Website") || type.includes("sitio web")) {
     if (isSpanish) return {
@@ -230,12 +234,12 @@ function buildDeveloperBrief(analysis: ProjectAnalysis, language: OutputLanguage
 
   return {
     suggestedStack: "Next.js, TypeScript, Tailwind CSS, structured forms, local storage, JSON/CSV export utilities and webhook-ready payloads.",
-    mainFeatures: "Project intake, demo loading, generated analysis, PM brief, developer brief, task tracking, progress updates and automation-ready exports.",
-    reusableComponents: "Intake fields, demo cards, dashboard cards, brief cards, task status controls, progress bar and export blocks.",
-    dataModelIdea: "GeneratedProject with request, analysis, pmBrief, developerBrief, tasks, progress and automationPayload objects.",
-    suggestedApiEndpoints: "POST /api/generate-brief, POST /api/load-demo and POST /api/export-webhook for a server-backed version.",
-    integrationOptions: "Make webhook, n8n workflow trigger, Zapier catch hook and Power Automate HTTP request.",
-    technicalRisks: "Export schema versioning, webhook error handling, inconsistent user inputs and persistence strategy.",
+    mainFeatures: `Intake for ${solution}, status tracking, summary dashboard, operational tasks and handoff export for ${client}.`,
+    reusableComponents: "Intake forms, summary cards, status badges, task lists, detail panels and export blocks.",
+    dataModelIdea: `${projectName} with entities such as Request, Client, Status, Note, Task, Metric and Handoff.`,
+    suggestedApiEndpoints: "POST /api/requests, GET /api/requests, PATCH /api/requests/:id/status and POST /api/requests/:id/handoff in a backend-backed version.",
+    integrationOptions: `Google Sheets, Notion, Slack, Gmail, Make, Zapier, n8n and current tools such as ${tools}.`,
+    technicalRisks: "Incomplete requirements, scope changes, inconsistent data, permissions and persistence strategy.",
   };
 }
 
@@ -296,7 +300,7 @@ export function generateProject(input: ProjectRequestInput, language: OutputLang
   };
   const analysis = buildAnalysis(request, language);
   const pmBrief = buildPMBrief(request, analysis, language);
-  const developerBrief = buildDeveloperBrief(analysis, language);
+  const developerBrief = buildDeveloperBrief(request, analysis, language);
   const tasks = buildTasks(request, analysis, language);
   const progress = calculateProgress(tasks);
   const id = createId("project");
